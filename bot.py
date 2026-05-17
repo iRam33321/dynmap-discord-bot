@@ -361,9 +361,34 @@ def _deploy_zip(url: str, filename: str, size: int) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Health-check web server (keeps Render's free tier awake)
+# ---------------------------------------------------------------------------
+
+from aiohttp import web as aiohttp_web
+
+async def _health_handler(request):
+    """Simple HTTP endpoint so Render sees a live web service."""
+    return aiohttp_web.Response(text="OK")
+
+async def _start_health_server():
+    port = int(os.getenv("PORT", "8080"))
+    app = aiohttp_web.Application()
+    app.router.add_get("/", _health_handler)
+    app.router.add_get("/health", _health_handler)
+    runner = aiohttp_web.AppRunner(app)
+    await runner.setup()
+    site = aiohttp_web.TCPSite(runner, "0.0.0.0", port)
+    await site.start()
+    log.info("Health server listening on port %d", port)
+
+# ---------------------------------------------------------------------------
 # Entry point
 # ---------------------------------------------------------------------------
 
+async def _main():
+    await _start_health_server()
+    await client.start(DISCORD_TOKEN)
+
 if __name__ == "__main__":
     log.info("Starting Dynmap Discord Deployment Bot…")
-    client.run(DISCORD_TOKEN)
+    asyncio.run(_main())
