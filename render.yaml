@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: dynmap-discord-bot
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 bot.py
+    envVars:
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: CHANNEL_ID
+        sync: false
+      - key: GITHUB_PAT
+        sync: false
+      - key: GITHUB_REPO_PATH
+        value: /opt/render/project/src/pages-repo
+      - key: GITHUB_PAGES_URL
+        value: https://iram33321.github.io
