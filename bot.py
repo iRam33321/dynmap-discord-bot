@@ -84,11 +84,18 @@ IGNORE_DUPLICATES = os.getenv("IGNORE_DUPLICATES", "false").lower() == "true"
 HEALTH_PORT       = int(os.getenv("HEALTH_PORT", "9090"))
 
 # FTP / SFTP settings
-FTP_HOST          = os.getenv("FTP_HOST", "")
+_ftp_host_raw     = os.getenv("FTP_HOST", "")
+# Strip port if someone stored the host as "hostname:21"
+if ":" in _ftp_host_raw:
+    _ftp_host_raw, _embedded_port = _ftp_host_raw.rsplit(":", 1)
+    _ftp_default_port = int(_embedded_port)
+else:
+    _ftp_default_port = 21
+FTP_HOST          = _ftp_host_raw
 FTP_USER          = os.getenv("FTP_USER", "")
 FTP_PASS          = os.getenv("FTP_PASS", "")
 FTP_PATH          = os.getenv("FTP_PATH", "/plugins/dynmap/web")
-FTP_PORT          = int(os.getenv("FTP_PORT", "21"))
+FTP_PORT          = int(os.getenv("FTP_PORT", str(_ftp_default_port)))
 USE_SFTP          = os.getenv("USE_SFTP", "false").lower() == "true"
 TRIGGER_PHRASE    = os.getenv("TRIGGER_PHRASE", "Map is ready for print").lower()
 
